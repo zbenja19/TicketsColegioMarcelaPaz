@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,9 +33,9 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,9 +47,15 @@ private val Cream = Color(0xFFF4F1EA)
 private val SoftBlue = Color(0xFFC9D6E8)
 private val Border = Color(0xFF4A6285)
 
+/**
+ * Portada de la app.
+ *
+ * @param onRegister navega a la pantalla de registro (crear cuenta).
+ * @param onLogin navega a la pantalla de inicio de sesión.
+ */
 @Composable
 fun WelcomeScreen(
-    onCreateReport: () -> Unit,
+    onRegister: () -> Unit,
     onLogin: () -> Unit,
 ) {
     Column(
@@ -58,13 +64,12 @@ fun WelcomeScreen(
             .background(Navy)
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 28.dp, vertical = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 24.dp)
     ) {
         Text(
             text = "COLEGIO MARCELA PAZ",
             color = SoftBlue,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.labelLarge,
             letterSpacing = 1.2.sp,
         )
 
@@ -84,48 +89,47 @@ fun WelcomeScreen(
                 append(".")
             },
             color = Color.White,
-            fontSize = 44.sp,
-            lineHeight = 46.sp,
+            style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.ExtraBold,
         )
 
         Text(
-            text = "Crea un reporte para dar aviso sobre algún objeto o lugar del colegio en mal estado" +
-                    " y que necesite su atención. Podras ver un seguimiento de los reportes en tiempo real. ",
+            text = "Crea un reporte para dar aviso sobre algún objeto o lugar del colegio " +
+                    "en mal estado y que necesite atención. Podrás ver el seguimiento " +
+                    "de tus reportes en tiempo real.",
             color = SoftBlue,
-            fontSize = 17.sp,
-            lineHeight = 24.sp,
-            modifier = Modifier.padding(top = 14.dp),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 12.dp),
         )
 
         Column(
             modifier = Modifier.padding(top = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // Acción principal: registro
             Button(
-                onClick = onCreateReport,
+                onClick = onRegister,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Accent,
                     contentColor = Navy,
                 ),
             ) {
-                Text("Crear un reporte", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text("Crear cuenta", style = MaterialTheme.typography.labelLarge, fontSize = 17.sp)
             }
 
+            // Acción secundaria: inicio de sesión
             OutlinedButton(
                 onClick = onLogin,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(56.dp),
                 border = BorderStroke(1.5.dp, Border),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
             ) {
-                Text("Ya tengo cuenta", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text("Iniciar sesión", style = MaterialTheme.typography.labelLarge, fontSize = 17.sp)
             }
         }
     }
@@ -230,5 +234,7 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun WelcomeScreenPreview() {
-    WelcomeScreen(onCreateReport = {}, onLogin = {})
+    MaterialTheme {
+        WelcomeScreen(onRegister = {}, onLogin = {})
+    }
 }
