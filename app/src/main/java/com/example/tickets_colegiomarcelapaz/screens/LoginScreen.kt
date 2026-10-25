@@ -33,7 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import com.example.tickets_colegiomarcelapaz.ui.theme.TicketsColegioMarcelaPazTheme
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -78,9 +78,9 @@ fun LoginScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AuthNavy,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
             )
         },
@@ -97,7 +97,7 @@ fun LoginScreen(
             Text(
                 text = "Bienvenido de vuelta",
                 style = MaterialTheme.typography.headlineMedium,
-                color = AuthNavy,
+                color = MaterialTheme.colorScheme.primary,
             )
             Text(
                 text = "Ingresa con tu correo para ver tus reportes.",
@@ -149,8 +149,8 @@ fun LoginScreen(
                     .height(56.dp)
                     .padding(top = 8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AuthAccent,
-                    contentColor = AuthNavy,
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
             ) {
                 Text("Iniciar sesión", fontSize = 17.sp, style = MaterialTheme.typography.labelLarge)

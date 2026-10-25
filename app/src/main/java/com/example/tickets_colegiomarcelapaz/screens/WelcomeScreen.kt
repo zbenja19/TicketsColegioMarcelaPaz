@@ -41,11 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val Navy = Color(0xFF10233D)
-private val Accent = Color(0xFFF5B83D)
-private val Cream = Color(0xFFF4F1EA)
-private val SoftBlue = Color(0xFFC9D6E8)
-private val Border = Color(0xFF4A6285)
+import com.example.tickets_colegiomarcelapaz.ui.theme.BrandAccent as Accent
+import com.example.tickets_colegiomarcelapaz.ui.theme.BrandBorder as Border
+import com.example.tickets_colegiomarcelapaz.ui.theme.BrandCream as Cream
+import com.example.tickets_colegiomarcelapaz.ui.theme.BrandNavy as Navy
+import com.example.tickets_colegiomarcelapaz.ui.theme.BrandSoftBlue as SoftBlue
+import com.example.tickets_colegiomarcelapaz.ui.theme.TicketsColegioMarcelaPazTheme
 
 /**
  * Portada de la app.

@@ -17,19 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
-// Colores de marca (los mismos de la portada).
-internal val AuthNavy = Color(0xFF10233D)
-internal val AuthAccent = Color(0xFFF5B83D)
-
-// ---------- Validaciones ----------
-// Devuelven un mensaje de error, o null si el valor es válido.
 
 internal fun validateName(value: String): String? = when {
     value.isBlank() -> "Ingresa tu nombre"
