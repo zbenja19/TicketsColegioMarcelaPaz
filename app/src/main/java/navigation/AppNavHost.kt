@@ -20,6 +20,7 @@ import com.example.tickets_colegiomarcelapaz.screens.RegisterScreen
 import com.example.tickets_colegiomarcelapaz.screens.WelcomeScreen
 import com.example.tickets_colegiomarcelapaz.ui.theme.BrandNavy
 import com.example.tickets_colegiomarcelapaz.viewmodel.AuthViewModel
+import com.example.tickets_colegiomarcelapaz.repository.TicketRepository
 
 @Composable
 fun AppNavHost(modifier: Modifier = Modifier) {
@@ -84,8 +85,10 @@ private fun AppNavGraph(authViewModel: AuthViewModel, modifier: Modifier) {
             )
         }
         composable(Routes.HOME) {
+            val tickets = remember { TicketRepository().obtenerTickets() }
             HomeScreen(
                 nombre = state.usuario?.nombre ?: "",
+                tickets = tickets,
                 onLogout = {
                     authViewModel.cerrarSesion {
                         navController.navigate(Routes.WELCOME) {

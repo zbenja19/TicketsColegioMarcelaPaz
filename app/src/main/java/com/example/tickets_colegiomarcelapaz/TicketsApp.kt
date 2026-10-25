@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.tickets_colegiomarcelapaz.data.AppDatabase
 import com.example.tickets_colegiomarcelapaz.data.SessionManager
 import com.example.tickets_colegiomarcelapaz.repository.UsuarioRepository
+import com.example.tickets_colegiomarcelapaz.repository.DocumentoRepository
 
 class TicketsApp : Application() {
 
@@ -19,5 +20,9 @@ class TicketsApp : Application() {
 
     val usuarioRepository: UsuarioRepository by lazy {
         UsuarioRepository(database.usuarioDao())
+    }
+
+    val documentoRepository: DocumentoRepository by lazy {
+        DocumentoRepository(this, database.documentoDao())
     }
 }

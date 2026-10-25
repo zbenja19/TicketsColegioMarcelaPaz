@@ -14,6 +14,6 @@ interface DocumentoDao {
     @Delete
     suspend fun eliminar(documento: Documento)
 
-    @Query("SELECT * FROM documentos WHERE usuarioId = :usuarioId ORDER BY fecha DESC")
-    fun observarPorUsuario(usuarioId: Long): Flow<List<Documento>>
+   @Query("SELECT * FROM documentos WHERE id = id LIMIT 1")
+   suspend fun buscarPorId(id: Long): Documento?
 }
