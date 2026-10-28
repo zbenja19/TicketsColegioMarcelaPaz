@@ -1,12 +1,10 @@
 package com.example.tickets_colegiomarcelapaz.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -14,70 +12,47 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.tickets_colegiomarcelapaz.ui.theme.TicketsColegioMarcelaPazTheme
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.tickets_colegiomarcelapaz.viewmodel.RegisterForm
 
-/**
- * Vista de registro de usuario.
- *
- * @param onRegister se llama solo cuando el formulario es válido (aquí se guarda el usuario).
- * @param errorMessage error de registro (ej. "Este correo ya está registrado"), o null.
- */
+/** Vista de registro. El estado y la validación viven en AuthViewModel. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegister: (name: String, email: String, password: String) -> Unit,
+    form: RegisterForm,
+    cargando: Boolean,
+    errorMessage: String?,
+    onNombreChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onConfirmarChange: (String) -> Unit,
+    onSubmit: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onBack: () -> Unit,
-    errorMessage: String? = null,
 ) {
-    var name by rememberSaveable { mutableStateOf("") }
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var confirmPassword by rememberSaveable { mutableStateOf("") }
-    var submitted by rememberSaveable { mutableStateOf(false) }
-
-    val nameError = if (submitted) validateName(name) else null
-    val emailError = if (submitted) validateEmail(email) else null
-    val passwordError = if (submitted) validatePassword(password, strict = true) else null
-    val confirmError = if (submitted) validateConfirmPassword(password, confirmPassword) else null
-
     val focusManager = LocalFocusManager.current
-
-    fun submit() {
-        submitted = true
-        val valid = validateName(name) == null &&
-                validateEmail(email) == null &&
-                validatePassword(password, strict = true) == null &&
-                validateConfirmPassword(password, confirmPassword) == null
-        if (valid) {
-            focusManager.clearFocus()
-            onRegister(name.trim(), email.trim(), password)
-        }
+    val submit = {
+        focusManager.clearFocus()
+        onSubmit()
     }
 
     Scaffold(
@@ -118,69 +93,46 @@ fun RegisterScreen(
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
-            AnimatedVisibility(visible = errorMessage != null) {
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                ) {
-                    Text(
-                        text = errorMessage ?: "",
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(12.dp),
-                    )
-                }
-            }
+            BannerError(errorMessage)
 
-            AuthTextField(
-                value = name,
-                onValueChange = { name = it },
+            CampoTexto(
+                value = form.nombre,
+                onValueChange = onNombreChange,
                 label = "Nombre completo",
-                error = nameError,
+                error = form.nombreError,
+                leadingIcon = Icons.Filled.Person,
             )
 
-            AuthTextField(
-                value = email,
-                onValueChange = { email = it },
+            CampoTexto(
+                value = form.email,
+                onValueChange = onEmailChange,
                 label = "Correo electrónico",
-                error = emailError,
+                error = form.emailError,
+                leadingIcon = Icons.Filled.Email,
                 keyboardType = KeyboardType.Email,
             )
 
-            AuthTextField(
-                value = password,
-                onValueChange = { password = it },
+            CampoTexto(
+                value = form.password,
+                onValueChange = onPasswordChange,
                 label = "Contraseña",
-                error = passwordError,
+                error = form.passwordError,
+                leadingIcon = Icons.Filled.Lock,
                 isPassword = true,
             )
 
-            AuthTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+            CampoTexto(
+                value = form.confirmar,
+                onValueChange = onConfirmarChange,
                 label = "Confirmar contraseña",
-                error = confirmError,
+                error = form.confirmarError,
+                leadingIcon = Icons.Filled.Lock,
                 isPassword = true,
                 imeAction = ImeAction.Done,
                 keyboardActions = KeyboardActions(onDone = { submit() }),
             )
 
-            Button(
-                onClick = { submit() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
-            ) {
-                Text("Crear cuenta", fontSize = 17.sp, style = MaterialTheme.typography.labelLarge)
-            }
+            BotonPrincipal(texto = "Crear cuenta", cargando = cargando, onClick = submit)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -198,6 +150,17 @@ fun RegisterScreen(
 @Composable
 private fun RegisterScreenPreview() {
     MaterialTheme {
-        RegisterScreen(onRegister = { _, _, _ -> }, onNavigateToLogin = {}, onBack = {})
+        RegisterScreen(
+            form = RegisterForm(intentado = true),
+            cargando = false,
+            errorMessage = null,
+            onNombreChange = {},
+            onEmailChange = {},
+            onPasswordChange = {},
+            onConfirmarChange = {},
+            onSubmit = {},
+            onNavigateToLogin = {},
+            onBack = {},
+        )
     }
 }

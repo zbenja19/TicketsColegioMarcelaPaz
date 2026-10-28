@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Carpetas de filesDir que FileProvider puede compartir (cámara y visor de Word). -->
+<paths>
+    <files-path name="documentos" path="documentos/" />
+    <files-path name="fotos" path="fotos/" />
+</paths>

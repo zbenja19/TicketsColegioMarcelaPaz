@@ -1,12 +1,22 @@
 package com.example.tickets_colegiomarcelapaz.repository
 
-import com.example.tickets_colegiomarcelapaz.model.Ticket
+import com.example.tickets_colegiomarcelapaz.data.Ticket
+import com.example.tickets_colegiomarcelapaz.data.TicketDao
+import com.example.tickets_colegiomarcelapaz.data.siguienteEstado
+import java.io.File
 
-class TicketRepository{
-    fun obtenerTickets(): List<Ticket> = listOf (
-        Ticket(1, "Proyector sin imagen", "Sala 12 no proyecta", "Abierto"),
-        Ticket(2, "Proyector sin imagen", "Sala 12 no proyecta", "En Proceso"),
-        Ticket(3, "Proyector sin imagen", "Sala 12 no proyecta", "Cerrado")
+class TicketRepository(private val dao: TicketDao) {
 
-    )
+    fun tickets(usuarioId: Long) = dao.listarPorUsuario(usuarioId)
+
+    suspend fun crear(ticket: Ticket): Long = dao.insertar(ticket)
+
+    suspend fun avanzarEstado(ticket: Ticket) =
+        dao.actualizar(ticket.copy(estado = siguienteEstado(ticket.estado)))
+
+    /** Borra la fila y también la foto, para no dejar archivos huérfanos. */
+    suspend fun eliminar(ticket: Ticket) {
+        dao.eliminar(ticket)
+        ticket.fotoRuta?.let { File(it).delete() }
+    }
 }

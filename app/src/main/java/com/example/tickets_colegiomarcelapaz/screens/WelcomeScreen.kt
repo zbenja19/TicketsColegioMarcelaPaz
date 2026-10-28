@@ -1,5 +1,11 @@
 package com.example.tickets_colegiomarcelapaz.screens
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -19,9 +25,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -59,6 +67,15 @@ fun WelcomeScreen(
     onRegister: () -> Unit,
     onLogin: () -> Unit,
 ) {
+    // Animación infinita: el ticket sube y baja suavemente (efecto "flotando").
+    val flotar = rememberInfiniteTransition(label = "flotar")
+    val desplazamiento by flotar.animateFloat(
+        initialValue = -8f,
+        targetValue = 8f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "desplazamiento",
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +97,11 @@ fun WelcomeScreen(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            TicketIllustration(Modifier.size(width = 320.dp, height = 270.dp))
+            TicketIllustration(
+                Modifier
+                    .size(width = 320.dp, height = 270.dp)
+                    .graphicsLayer { translationY = desplazamiento * density }
+            )
         }
 
         Text(
