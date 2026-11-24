@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,7 @@ import com.example.tickets_colegiomarcelapaz.viewmodel.TicketViewModel
 import java.text.DateFormat
 import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     nombre: String,
@@ -55,6 +58,8 @@ fun HomeScreen(
 ) {
     val tickets by viewModel.tickets.collectAsStateWithLifecycle()
     val filtroActual by viewModel.filtroUrgencia.collectAsStateWithLifecycle()
+    val cargando by viewModel.cargando.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
     var porEliminar by remember { mutableStateOf<Ticket?>(null) }
 
     Box(Modifier.fillMaxSize()) {
@@ -75,7 +80,6 @@ fun HomeScreen(
                 )
             }
 
-            // Filtros por Prioridad / Urgencia
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
                 Text(
                     text = "Filtrar por prioridad:",
@@ -102,46 +106,54 @@ fun HomeScreen(
                 }
             }
 
-            val lista = tickets
-            when {
-                lista == null -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-                lista.isEmpty() -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (filtroActual == "Todas") {
-                            Text("Aún no tienes reportes", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                text = "Toca \"Nuevo reporte\" para crear el primero.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                            )
-                        } else {
-                            Text("Sin reportes", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                text = "No hay reportes para el filtro \"$filtroActual\".",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                            )
+            error?.let { mensaje ->
+                ErrorServidor(mensaje = mensaje, onReintentar = viewModel::recargar)
+            }
+
+            PullToRefreshBox(
+                isRefreshing = cargando,
+                onRefresh = viewModel::recargar,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) {
+                val lista = tickets
+                when {
+                    lista == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                    lista.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (filtroActual == "Todas") {
+                                Text("Aún no tienes reportes", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    text = "Toca \"Nuevo reporte\" para crear el primero.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                )
+                            } else {
+                                Text("Sin reportes", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    text = "No hay reportes para el filtro \"$filtroActual\".",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
                     }
-                }
-                else -> LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    // El padding inferior evita que el botón flotante tape la última tarjeta.
-                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(lista, key = { it.id }) { ticket ->
-                        TicketCard(
-                            ticket = ticket,
-                            onEstado = { viewModel.avanzarEstado(ticket) },
-                            onEliminar = { porEliminar = ticket },
-                            // animateItem: las tarjetas entran, salen y se reordenan con animación.
-                            modifier = Modifier.animateItem(),
-                        )
+                    else -> LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 96.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(lista, key = { it.id }) { ticket ->
+                            TicketCard(
+                                ticket = ticket,
+                                onEstado = { viewModel.avanzarEstado(ticket) },
+                                onEliminar = { porEliminar = ticket },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
                     }
                 }
             }
@@ -169,6 +181,30 @@ fun HomeScreen(
                 TextButton(onClick = { porEliminar = null }) { Text("Cancelar") }
             },
         )
+    }
+}
+
+@Composable
+private fun ErrorServidor(mensaje: String, onReintentar: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = mensaje,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onReintentar) { Text("Reintentar") }
+        }
     }
 }
 
@@ -257,7 +293,6 @@ private fun UrgenciaBadge(urgencia: String) {
     }
 }
 
-/** Chip de estado: al cambiar, el color pasa suavemente al nuevo (animateColorAsState). */
 @Composable
 private fun EstadoChip(estado: String, onClick: () -> Unit) {
     val (fondo, texto) = when (estado) {

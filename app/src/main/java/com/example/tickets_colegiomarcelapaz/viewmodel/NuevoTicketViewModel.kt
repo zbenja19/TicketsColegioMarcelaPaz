@@ -14,13 +14,15 @@ import com.example.tickets_colegiomarcelapaz.validation.validatePlace
 import com.example.tickets_colegiomarcelapaz.validation.validateSector
 import com.example.tickets_colegiomarcelapaz.validation.validateTitle
 import com.example.tickets_colegiomarcelapaz.validation.validateUrgency
+import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
+import retrofit2.HttpException
 
 data class NuevoTicketForm(
     val titulo: String = "",
@@ -31,6 +33,7 @@ data class NuevoTicketForm(
     val fotoRuta: String? = null,
     val intentado: Boolean = false,
     val guardando: Boolean = false,
+    val errorServidor: String? = null,
 ) {
     val tituloError get() = if (intentado) validateTitle(titulo) else null
     val descripcionError get() = if (intentado) validateDescription(descripcion) else null
@@ -60,19 +63,17 @@ class NuevoTicketViewModel(
     fun onLugarOtro(v: String) = _form.update { it.copy(lugarOtro = v) }
     fun onUrgencia(v: String) = _form.update { it.copy(urgencia = v) }
 
-    /** Si cambia a un sector distinto de "Otro", se limpia el lugar exacto. */
     fun onSector(v: String) = _form.update {
         it.copy(sector = v, lugarOtro = if (v == "Otro") it.lugarOtro else "")
     }
 
-    /** Guarda la ruta de la nueva foto (o null para quitarla) y borra la anterior. */
     fun onFoto(ruta: String?) {
         _form.value.fotoRuta?.takeIf { it != ruta }?.let { File(it).delete() }
         _form.update { it.copy(fotoRuta = ruta) }
     }
 
     fun guardar(onExito: () -> Unit) {
-        _form.update { it.copy(intentado = true) }
+        _form.update { it.copy(intentado = true, errorServidor = null) }
         val f = _form.value
         if (!f.esValido || f.guardando) return
         viewModelScope.launch {
@@ -82,23 +83,32 @@ class NuevoTicketViewModel(
                 _form.update { it.copy(guardando = false) }
                 return@launch
             }
-            repository.crear(
-                Ticket(
-                    usuarioId = usuarioId,
-                    titulo = f.titulo.trim(),
-                    descripcion = f.descripcion.trim(),
-                    sector = if (f.sector == "Otro") f.lugarOtro.trim() else f.sector,
-                    urgencia = f.urgencia,
-                    fecha = System.currentTimeMillis(), // fecha automática
-                    fotoRuta = f.fotoRuta,
+            try {
+                repository.crear(
+                    Ticket(
+                        usuarioId = usuarioId,
+                        titulo = f.titulo.trim(),
+                        descripcion = f.descripcion.trim(),
+                        sector = if (f.sector == "Otro") f.lugarOtro.trim() else f.sector,
+                        urgencia = f.urgencia,
+                        fecha = System.currentTimeMillis(),
+                        fotoRuta = f.fotoRuta,
+                    )
                 )
-            )
-            guardado = true
-            onExito()
+                guardado = true
+                onExito()
+            } catch (e: IOException) {
+                _form.update {
+                    it.copy(guardando = false, errorServidor = "Sin conexión con el servidor. Revisa que esté encendido.")
+                }
+            } catch (e: HttpException) {
+                _form.update {
+                    it.copy(guardando = false, errorServidor = "El servidor rechazó el reporte (error ${e.code()}).")
+                }
+            }
         }
     }
 
-    /** Si el usuario sale sin guardar, la foto tomada ya no sirve: se borra. */
     override fun onCleared() {
         if (!guardado) _form.value.fotoRuta?.let { File(it).delete() }
     }

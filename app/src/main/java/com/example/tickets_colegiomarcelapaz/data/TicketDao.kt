@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,7 +19,12 @@ interface TicketDao {
     @Delete
     suspend fun eliminar(ticket: Ticket)
 
-    /** Flow: Room vuelve a emitir la lista cada vez que la tabla cambia. */
+    @Upsert
+    suspend fun guardarTodos(tickets: List<Ticket>)
+
+    @Query("DELETE FROM tickets WHERE usuarioId = :usuarioId AND id NOT IN (:ids)")
+    suspend fun borrarAusentes(usuarioId: Long, ids: List<Long>)
+
     @Query("SELECT * FROM tickets WHERE usuarioId = :usuarioId ORDER BY fecha DESC")
     fun listarPorUsuario(usuarioId: Long): Flow<List<Ticket>>
 }
