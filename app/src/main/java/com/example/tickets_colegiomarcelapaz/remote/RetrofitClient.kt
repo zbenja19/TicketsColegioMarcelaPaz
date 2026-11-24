@@ -9,6 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val BASE_URL_TICKETS = "http://10.0.2.2:8082/"
+    private const val BASE_URL_CLIMA = "https://api.open-meteo.com/"
 
     private val cliente = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
@@ -16,12 +17,18 @@ object RetrofitClient {
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
 
-    val ticketApi: TicketApiService by lazy {
+    private fun crear(baseUrl: String): Retrofit =
         Retrofit.Builder()
-            .baseUrl(BASE_URL_TICKETS)
+            .baseUrl(baseUrl)
             .client(cliente)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(TicketApiService::class.java)
+
+    val ticketApi: TicketApiService by lazy {
+        crear(BASE_URL_TICKETS).create(TicketApiService::class.java)
+    }
+
+    val climaApi: ClimaApiService by lazy {
+        crear(BASE_URL_CLIMA).create(ClimaApiService::class.java)
     }
 }
