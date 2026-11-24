@@ -13,14 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +54,7 @@ fun HomeScreen(
     viewModel: TicketViewModel = viewModel(factory = TicketViewModel.Factory),
 ) {
     val tickets by viewModel.tickets.collectAsStateWithLifecycle()
+    val filtroActual by viewModel.filtroUrgencia.collectAsStateWithLifecycle()
     var porEliminar by remember { mutableStateOf<Ticket?>(null) }
 
     Box(Modifier.fillMaxSize()) {
@@ -71,6 +75,33 @@ fun HomeScreen(
                 )
             }
 
+            // Filtros por Prioridad / Urgencia
+            Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                Text(
+                    text = "Filtrar por prioridad:",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                )
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val opciones = listOf("Todas", "Alta", "Media", "Baja", "Alta a Baja")
+                    items(opciones) { opcion ->
+                        val seleccionado = filtroActual == opcion
+                        FilterChip(
+                            selected = seleccionado,
+                            onClick = { viewModel.setFiltroUrgencia(opcion) },
+                            label = { Text(opcion) },
+                            leadingIcon = if (seleccionado) {
+                                { Icon(Icons.Filled.Check, contentDescription = null) }
+                            } else null,
+                        )
+                    }
+                }
+            }
+
             val lista = tickets
             when {
                 lista == null -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -78,13 +109,23 @@ fun HomeScreen(
                 }
                 lista.isEmpty() -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Aún no tienes reportes", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            text = "Toca \"Nuevo reporte\" para crear el primero.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                        )
+                        if (filtroActual == "Todas") {
+                            Text("Aún no tienes reportes", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = "Toca \"Nuevo reporte\" para crear el primero.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        } else {
+                            Text("Sin reportes", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = "No hay reportes para el filtro \"$filtroActual\".",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
                 }
                 else -> LazyColumn(
@@ -170,11 +211,19 @@ private fun TicketCard(
                         .height(160.dp),
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
-                    text = "${ticket.sector} · Urgencia ${ticket.urgencia} · " +
-                            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                                .format(Date(ticket.fecha)),
+                    text = "${ticket.sector} · ",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                UrgenciaBadge(urgencia = ticket.urgencia)
+                Text(
+                    text = " · " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                        .format(Date(ticket.fecha)),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
@@ -184,6 +233,27 @@ private fun TicketCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun UrgenciaBadge(urgencia: String) {
+    val (fondo, texto) = when (urgencia.lowercase()) {
+        "alta" -> Color(0xFFFFCDD2) to Color(0xFFB71C1C)
+        "media" -> Color(0xFFFFE0B2) to Color(0xFFE65100)
+        "baja" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(
+        color = fondo,
+        shape = MaterialTheme.shapes.extraSmall,
+    ) {
+        Text(
+            text = urgencia,
+            color = texto,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+        )
     }
 }
 
