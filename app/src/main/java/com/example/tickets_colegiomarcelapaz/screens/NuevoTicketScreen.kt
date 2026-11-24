@@ -226,7 +226,7 @@ fun NuevoTicketScreen(
                     }
                 }
             }
-
+            form.errorServidor?.let { MensajeError(it) }
             BotonPrincipal(texto = "Guardar reporte", cargando = form.guardando) {
                 focusManager.clearFocus()
                 viewModel.guardar(onExito = onGuardado)
