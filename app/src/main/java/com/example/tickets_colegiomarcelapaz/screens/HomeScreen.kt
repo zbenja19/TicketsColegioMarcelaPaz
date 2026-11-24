@@ -48,6 +48,11 @@ import com.example.tickets_colegiomarcelapaz.data.Ticket
 import com.example.tickets_colegiomarcelapaz.viewmodel.TicketViewModel
 import java.text.DateFormat
 import java.util.Date
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
+import com.example.tickets_colegiomarcelapaz.viewmodel.ClimaUiState
+import com.example.tickets_colegiomarcelapaz.viewmodel.ClimaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,11 +60,13 @@ fun HomeScreen(
     nombre: String,
     onNuevoTicket: () -> Unit,
     viewModel: TicketViewModel = viewModel(factory = TicketViewModel.Factory),
+    climaViewModel: ClimaViewModel = viewModel(factory = ClimaViewModel.Factory),
 ) {
     val tickets by viewModel.tickets.collectAsStateWithLifecycle()
     val filtroActual by viewModel.filtroUrgencia.collectAsStateWithLifecycle()
     val cargando by viewModel.cargando.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val clima by climaViewModel.estado.collectAsStateWithLifecycle()
     var porEliminar by remember { mutableStateOf<Ticket?>(null) }
 
     Box(Modifier.fillMaxSize()) {
@@ -80,6 +87,7 @@ fun HomeScreen(
                 )
             }
 
+            TarjetaClima(estado = clima, onReintentar = climaViewModel::cargar)
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
                 Text(
                     text = "Filtrar por prioridad:",
@@ -112,7 +120,10 @@ fun HomeScreen(
 
             PullToRefreshBox(
                 isRefreshing = cargando,
-                onRefresh = viewModel::recargar,
+                onRefresh = {
+                    viewModel.recargar()
+                    climaViewModel.cargar()
+                },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             ) {
                 val lista = tickets
@@ -315,5 +326,69 @@ private fun EstadoChip(estado: String, onClick: () -> Unit) {
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
         )
+    }
+}
+
+@Composable
+private fun TarjetaClima(estado: ClimaUiState, onReintentar: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            when (estado) {
+                ClimaUiState.Cargando -> {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    Text(
+                        text = "Consultando el clima del colegio...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+                ClimaUiState.Error -> {
+                    Text(
+                        text = "No se pudo obtener el clima",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = onReintentar) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Reintentar clima")
+                    }
+                }
+                is ClimaUiState.Exito -> {
+                    val datos = estado.clima
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "${datos.temperatura}°C · ${datos.descripcion}",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = "Probabilidad de lluvia hoy: ${datos.probabilidadLluvia}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (datos.alertaLluvia) {
+                            Text(
+                                text = "Revisar techos, canaletas y posibles filtraciones",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                    if (datos.alertaLluvia) {
+                        Icon(
+                            Icons.Filled.Warning,
+                            contentDescription = "Alerta de lluvia",
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
