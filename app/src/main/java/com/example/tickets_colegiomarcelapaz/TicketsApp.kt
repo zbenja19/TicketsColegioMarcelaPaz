@@ -20,7 +20,7 @@ class TicketsApp : Application() {
     val sessionManager: SessionManager by lazy { SessionManager(this) }
 
     val usuarioRepository: UsuarioRepository by lazy {
-        UsuarioRepository(database.usuarioDao())
+        UsuarioRepository(database.usuarioDao(), RetrofitClient.usuarioApi)
     }
 
     val documentoRepository: DocumentoRepository by lazy {
