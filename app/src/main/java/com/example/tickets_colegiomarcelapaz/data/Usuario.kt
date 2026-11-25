@@ -9,8 +9,7 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["email"], unique = true)]
 )
 data class Usuario(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey val id: Long,
     val nombre: String,
     val email: String,
-    val passwordHash: String,
 )
