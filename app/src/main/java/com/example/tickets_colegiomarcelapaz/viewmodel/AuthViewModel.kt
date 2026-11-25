@@ -13,25 +13,22 @@ import com.example.tickets_colegiomarcelapaz.validation.validateConfirmPassword
 import com.example.tickets_colegiomarcelapaz.validation.validateEmail
 import com.example.tickets_colegiomarcelapaz.validation.validateName
 import com.example.tickets_colegiomarcelapaz.validation.validatePassword
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 data class AuthUiState(
     val cargando: Boolean = false,
     val error: String? = null,
     val usuario: Usuario? = null,
-    /** false mientras se lee la sesión guardada al abrir la app. */
     val sesionVerificada: Boolean = false,
 )
 
-/**
- * Estado del formulario de login. Los errores se calculan a partir de los campos;
- * [intentado] hace que solo se muestren después del primer "Iniciar sesión".
- */
 data class LoginForm(
     val email: String = "",
     val password: String = "",
@@ -82,12 +79,10 @@ class AuthViewModel(
         viewModelScope.launch {
             val id = session.usuarioId.first()
             val usuario = id?.let { repository.obtenerPorId(it) }
-            if (id != null && usuario == null) session.cerrar() // sesión huérfana
+            if (id != null && usuario == null) session.cerrar()
             _state.update { it.copy(usuario = usuario, sesionVerificada = true) }
         }
     }
-
-    // ---------- Cambios de campos (los llama la UI en cada tecla) ----------
 
     fun onLoginEmail(v: String) = _loginForm.update { it.copy(email = v) }
     fun onLoginPassword(v: String) = _loginForm.update { it.copy(password = v) }
@@ -97,24 +92,19 @@ class AuthViewModel(
     fun onRegisterPassword(v: String) = _registerForm.update { it.copy(password = v) }
     fun onRegisterConfirmar(v: String) = _registerForm.update { it.copy(confirmar = v) }
 
-    // ---------- Acciones ----------
-
     fun login(onSuccess: () -> Unit) {
         _loginForm.update { it.copy(intentado = true) }
         val form = _loginForm.value
         if (!form.esValido || _state.value.cargando) return
         viewModelScope.launch {
             _state.update { it.copy(cargando = true, error = null) }
-            val usuario = repository.login(form.email, form.password)
-            if (usuario == null) {
-                _state.update {
-                    it.copy(cargando = false, error = "Correo o contraseña incorrectos")
-                }
-            } else {
-                session.guardar(usuario.id)
-                _state.update { it.copy(cargando = false, usuario = usuario) }
-                limpiarFormularios()
-                onSuccess()
+            try {
+                val usuario = repository.login(form.email, form.password)
+                iniciarSesion(usuario, onSuccess)
+            } catch (e: IOException) {
+                mostrarError(SIN_CONEXION)
+            } catch (e: HttpException) {
+                mostrarError(if (e.code() == 401) "Correo o contraseña incorrectos" else "Error del servidor (${e.code()})")
             }
         }
     }
@@ -125,16 +115,19 @@ class AuthViewModel(
         if (!form.esValido || _state.value.cargando) return
         viewModelScope.launch {
             _state.update { it.copy(cargando = true, error = null) }
-            val usuario = repository.registrar(form.nombre, form.email, form.password)
-            if (usuario == null) {
-                _state.update {
-                    it.copy(cargando = false, error = "Este correo ya está registrado")
-                }
-            } else {
-                session.guardar(usuario.id)
-                _state.update { it.copy(cargando = false, usuario = usuario) }
-                limpiarFormularios()
-                onSuccess()
+            try {
+                val usuario = repository.registrar(form.nombre, form.email, form.password)
+                iniciarSesion(usuario, onSuccess)
+            } catch (e: IOException) {
+                mostrarError(SIN_CONEXION)
+            } catch (e: HttpException) {
+                mostrarError(
+                    when (e.code()) {
+                        409 -> "Este correo ya está registrado"
+                        400 -> "Los datos no son válidos"
+                        else -> "Error del servidor (${e.code()})"
+                    }
+                )
             }
         }
     }
@@ -152,12 +145,25 @@ class AuthViewModel(
         _state.update { it.copy(error = null) }
     }
 
+    private suspend fun iniciarSesion(usuario: Usuario, onSuccess: () -> Unit) {
+        session.guardar(usuario.id)
+        _state.update { it.copy(cargando = false, usuario = usuario) }
+        limpiarFormularios()
+        onSuccess()
+    }
+
+    private fun mostrarError(mensaje: String) {
+        _state.update { it.copy(cargando = false, error = mensaje) }
+    }
+
     private fun limpiarFormularios() {
         _loginForm.value = LoginForm()
         _registerForm.value = RegisterForm()
     }
 
     companion object {
+        const val SIN_CONEXION = "Sin conexión con el servidor. Revisa que esté encendido."
+
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as TicketsApp
