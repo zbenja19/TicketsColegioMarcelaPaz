@@ -1,7 +1,14 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+}
+
+val keystoreProperties = Properties().apply {
+    val archivo = rootProject.file("keystore.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
 }
 
 android {
@@ -20,6 +27,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties.getProperty("storeFile", "keystore/mpaz-ticket.jks"))
+            storePassword = keystoreProperties.getProperty("storePassword")
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         debug {
             enableUnitTestCoverage = true
@@ -29,6 +45,7 @@ android {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
