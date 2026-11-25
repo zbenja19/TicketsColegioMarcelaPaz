@@ -1,34 +1,42 @@
 package com.example.tickets_colegiomarcelapaz.repository
 
-import android.database.sqlite.SQLiteConstraintException
 import com.example.tickets_colegiomarcelapaz.data.Usuario
 import com.example.tickets_colegiomarcelapaz.data.UsuarioDao
-import java.security.MessageDigest
+import com.example.tickets_colegiomarcelapaz.remote.LoginRequest
+import com.example.tickets_colegiomarcelapaz.remote.RegistroRequest
+import com.example.tickets_colegiomarcelapaz.remote.UsuarioApiService
+import com.example.tickets_colegiomarcelapaz.remote.UsuarioDto
+import java.io.IOException
+import retrofit2.HttpException
 
-class UsuarioRepository(private val dao: UsuarioDao) {
+class UsuarioRepository(
+    private val dao: UsuarioDao,
+    private val api: UsuarioApiService,
+) {
 
-    /** Devuelve el usuario creado, o null si el correo ya estaba registrado. */
-    suspend fun registrar(nombre: String, email: String, password: String): Usuario? {
-        val correo = email.trim().lowercase()
-        if (dao.buscarPorEmail(correo) != null) return null
-        val nuevo = Usuario(nombre = nombre.trim(), email = correo, passwordHash = hash(password))
-        return try {
-            nuevo.copy(id = dao.insertar(nuevo))
-        } catch (e: SQLiteConstraintException) {
-            null // el índice único también protege contra duplicados
-        }
+    suspend fun registrar(nombre: String, email: String, password: String): Usuario {
+        val creado = api.registrar(RegistroRequest(nombre.trim(), normalizar(email), password))
+        return guardarEnCache(creado)
     }
 
-    /** Devuelve el usuario si las credenciales son correctas, o null. */
-    suspend fun login(email: String, password: String): Usuario? {
-        val usuario = dao.buscarPorEmail(email.trim().lowercase()) ?: return null
-        return if (usuario.passwordHash == hash(password)) usuario else null
+    suspend fun login(email: String, password: String): Usuario {
+        val usuario = api.login(LoginRequest(normalizar(email), password))
+        return guardarEnCache(usuario)
     }
 
-    suspend fun obtenerPorId(id: Long): Usuario? = dao.buscarPorId(id)
+    suspend fun obtenerPorId(id: Long): Usuario? = try {
+        guardarEnCache(api.buscar(id))
+    } catch (e: IOException) {
+        dao.buscarPorId(id)
+    } catch (e: HttpException) {
+        if (e.code() == 404) null else dao.buscarPorId(id)
+    }
 
-    private fun hash(password: String): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(password.toByteArray())
-            .joinToString("") { "%02x".format(it) }
+    private suspend fun guardarEnCache(dto: UsuarioDto): Usuario {
+        val usuario = Usuario(id = dto.id, nombre = dto.nombre, email = dto.email)
+        dao.guardar(usuario)
+        return usuario
+    }
+
+    private fun normalizar(email: String) = email.trim().lowercase()
 }
