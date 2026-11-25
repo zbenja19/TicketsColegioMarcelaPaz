@@ -34,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tickets_colegiomarcelapaz.viewmodel.RegisterForm
 
-/** Vista de registro. El estado y la validación viven en AuthViewModel. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(

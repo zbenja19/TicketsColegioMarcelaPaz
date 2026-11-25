@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tickets_colegiomarcelapaz.viewmodel.DocumentoViewModel
 
-/** Estado del visor: cargando, error o páginas listas. */
 private sealed interface PdfEstado {
     data object Cargando : PdfEstado
     data object Error : PdfEstado
@@ -53,7 +52,7 @@ fun PdfViewerScreen(
             if (doc == null) PdfEstado.Error
             else PdfEstado.Listo(doc.nombre, viewModel.paginasPdf(doc.ruta).map { it.asImageBitmap() })
         } catch (e: Exception) {
-            PdfEstado.Error // PDF dañado o protegido con contraseña
+            PdfEstado.Error
         }
     }
 

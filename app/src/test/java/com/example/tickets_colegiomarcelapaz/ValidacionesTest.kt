@@ -18,7 +18,7 @@ class ValidacionesTest {
     fun usuario() {
         assertNull(validateEmail("ana@colegio.cl"))
         assertNotNull(validateEmail("ana@colegio"))
-        assertNotNull(validatePassword("abcdefgh", strict = true)) // sin números
+        assertNotNull(validatePassword("abcdefgh", strict = true))
         assertNull(validatePassword("abcd1234", strict = true))
         assertNull(validatePassword("x", strict = false))
         assertNotNull(validateConfirmPassword("abcd1234", "abcd1235"))

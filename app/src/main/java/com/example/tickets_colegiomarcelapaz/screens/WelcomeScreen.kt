@@ -56,18 +56,11 @@ import com.example.tickets_colegiomarcelapaz.ui.theme.BrandNavy as Navy
 import com.example.tickets_colegiomarcelapaz.ui.theme.BrandSoftBlue as SoftBlue
 import com.example.tickets_colegiomarcelapaz.ui.theme.TicketsColegioMarcelaPazTheme
 
-/**
- * Portada de la app.
- *
- * @param onRegister navega a la pantalla de registro (crear cuenta).
- * @param onLogin navega a la pantalla de inicio de sesión.
- */
 @Composable
 fun WelcomeScreen(
     onRegister: () -> Unit,
     onLogin: () -> Unit,
 ) {
-    // Animación infinita: el ticket sube y baja suavemente (efecto "flotando").
     val flotar = rememberInfiniteTransition(label = "flotar")
     val desplazamiento by flotar.animateFloat(
         initialValue = -8f,
@@ -128,7 +121,6 @@ fun WelcomeScreen(
             modifier = Modifier.padding(top = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Acción principal: registro
             Button(
                 onClick = onRegister,
                 modifier = Modifier
@@ -142,7 +134,6 @@ fun WelcomeScreen(
                 Text("Crear cuenta", style = MaterialTheme.typography.labelLarge, fontSize = 17.sp)
             }
 
-            // Acción secundaria: inicio de sesión
             OutlinedButton(
                 onClick = onLogin,
                 modifier = Modifier
@@ -157,7 +148,6 @@ fun WelcomeScreen(
     }
 }
 
-/** Ticket dibujado con Canvas. Se diseña en un lienzo de 320x270 y se escala. */
 @Composable
 private fun TicketIllustration(modifier: Modifier = Modifier) {
     val textMeasurer = rememberTextMeasurer()
@@ -168,17 +158,14 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
         scale(scaleX = s, scaleY = s, pivot = Offset.Zero) {
             rotate(degrees = -5f, pivot = Offset(160f, 135f)) {
 
-                // Cuerpo del ticket
                 drawRoundRect(
                     color = Cream,
                     topLeft = Offset(12f, 20f),
                     size = Size(296f, 230f),
                     cornerRadius = CornerRadius(12f),
                 )
-                // Muescas laterales
                 drawCircle(Navy, radius = 16f, center = Offset(12f, 110f))
                 drawCircle(Navy, radius = 16f, center = Offset(308f, 110f))
-                // Línea punteada
                 drawLine(
                     color = Navy.copy(alpha = 0.35f),
                     start = Offset(32f, 110f),
@@ -187,7 +174,6 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 7f)),
                 )
 
-                // Etiqueta "Abierto"
                 drawRoundRect(
                     color = Accent,
                     topLeft = Offset(36f, 42f),
@@ -207,7 +193,6 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
                     style = TextStyle(color = Navy, fontSize = toSp(14f), fontWeight = FontWeight.Bold),
                 )
 
-                // Línea de título
                 drawRoundRect(
                     color = Navy,
                     topLeft = Offset(36f, 80f),
@@ -215,7 +200,6 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
                     cornerRadius = CornerRadius(5f),
                 )
 
-                // Llave inglesa
                 rotate(degrees = 45f, pivot = Offset(160f, 178f)) {
                     drawLine(
                         color = Navy,
@@ -235,7 +219,6 @@ private fun TicketIllustration(modifier: Modifier = Modifier) {
                     )
                 }
 
-                // Líneas de detalle
                 drawRoundRect(
                     color = Navy.copy(alpha = 0.35f),
                     topLeft = Offset(36f, 212f),
