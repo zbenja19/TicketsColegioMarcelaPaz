@@ -55,10 +55,6 @@ private val PESTANAS = listOf(
     Pestana(Routes.PERFIL, "Perfil", Icons.Filled.Person),
 )
 
-/**
- * Estructura principal tras iniciar sesión: barra superior, barra inferior y menú lateral.
- * Tiene su propio NavHost (interno) para las pestañas, así las barras no se redibujan.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -75,7 +71,6 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     var confirmarSalida by rememberSaveable { mutableStateOf(false) }
 
-    // Cambia de pestaña sin apilar pantallas y recordando el scroll de cada una.
     fun irA(ruta: String) {
         tabsNav.navigate(ruta) {
             popUpTo(tabsNav.graph.findStartDestination().id) { saveState = true }
@@ -143,7 +138,6 @@ fun MainScreen(
                             onClick = { irA(p.ruta) },
                             icon = { Icon(p.icono, contentDescription = null) },
                             label = { Text(p.titulo) },
-                            // El amarillo (secondary) casi no se lee sobre fondo claro.
                             colors = NavigationBarItemDefaults.colors(
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
                             ),

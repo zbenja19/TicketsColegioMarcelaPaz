@@ -12,7 +12,6 @@ private val Context.dataStore by preferencesDataStore(name = "session")
 class SessionManager(private val context: Context) {
     private val keyUsuarioId = longPreferencesKey("usuario_id")
 
-    /** Id del usuario conectado, o null si no hay sesión. */
     val usuarioId: Flow<Long?> = context.dataStore.data.map { it[keyUsuarioId] }
 
     suspend fun guardar(id: Long) {

@@ -4,16 +4,15 @@ import android.app.Application
 import androidx.room.Room
 import com.example.tickets_colegiomarcelapaz.data.AppDatabase
 import com.example.tickets_colegiomarcelapaz.data.SessionManager
+import com.example.tickets_colegiomarcelapaz.remote.RetrofitClient
 import com.example.tickets_colegiomarcelapaz.repository.DocumentoRepository
 import com.example.tickets_colegiomarcelapaz.repository.TicketRepository
 import com.example.tickets_colegiomarcelapaz.repository.UsuarioRepository
 
-/** Crea una sola vez la BD y los repositorios; los ViewModel los piden desde sus Factory. */
 class TicketsApp : Application() {
 
     val database: AppDatabase by lazy {
         Room.databaseBuilder(this, AppDatabase::class.java, "tickets.db")
-            // Si cambia la versión de la BD, se recrea (se pierden los datos de prueba).
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
@@ -21,7 +20,7 @@ class TicketsApp : Application() {
     val sessionManager: SessionManager by lazy { SessionManager(this) }
 
     val usuarioRepository: UsuarioRepository by lazy {
-        UsuarioRepository(database.usuarioDao())
+        UsuarioRepository(database.usuarioDao(), RetrofitClient.usuarioApi)
     }
 
     val documentoRepository: DocumentoRepository by lazy {
@@ -29,6 +28,6 @@ class TicketsApp : Application() {
     }
 
     val ticketRepository: TicketRepository by lazy {
-        TicketRepository(database.ticketDao())
+        TicketRepository(database.ticketDao(), RetrofitClient.ticketApi)
     }
 }

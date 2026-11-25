@@ -23,7 +23,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
-
 internal fun validateName(value: String): String? = when {
     value.isBlank() -> "Ingresa tu nombre"
     value.trim().length < 3 -> "Debe tener al menos 3 caracteres"
@@ -36,7 +35,6 @@ internal fun validateEmail(value: String): String? = when {
     else -> null
 }
 
-/** [strict] = true para registro (reglas de seguridad); false para login. */
 internal fun validatePassword(value: String, strict: Boolean): String? = when {
     value.isBlank() -> "Ingresa tu contraseña"
     strict && value.length < 8 -> "Mínimo 8 caracteres"
@@ -50,8 +48,6 @@ internal fun validateConfirmPassword(password: String, confirm: String): String?
     password != confirm -> "Las contraseñas no coinciden"
     else -> null
 }
-
-// ---------- Campo de texto reutilizable (Material 3) ----------
 
 @Composable
 internal fun AuthTextField(

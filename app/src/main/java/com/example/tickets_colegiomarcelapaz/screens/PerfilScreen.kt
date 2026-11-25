@@ -31,7 +31,6 @@ fun PerfilScreen(nombre: String, email: String, onLogout: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Avatar con la inicial del nombre
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.secondary,

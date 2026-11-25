@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [Usuario::class, Documento::class, Ticket::class],
-    version = 2, // 2: se agregó la tabla tickets
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

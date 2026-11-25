@@ -23,7 +23,6 @@ class DocumentoRepository(
 
     suspend fun buscar(id: Long): Documento? = dao.buscarPorId(id)
 
-    /** Lee nombre, tipo MIME y tamaño del archivo elegido en el selector. */
     suspend fun leerInfo(uri: Uri): ArchivoInfo = withContext(Dispatchers.IO) {
         val resolver = context.contentResolver
         var nombre = "documento"
@@ -38,7 +37,6 @@ class DocumentoRepository(
         ArchivoInfo(nombre, resolver.getType(uri) ?: "", tamano)
     }
 
-    /** Copia el archivo a filesDir/documentos (privado de la app) y lo registra en Room. */
     suspend fun guardar(uri: Uri, info: ArchivoInfo, usuarioId: Long): Documento =
         withContext(Dispatchers.IO) {
             val carpeta = File(context.filesDir, "documentos").apply { mkdirs() }
@@ -63,11 +61,6 @@ class DocumentoRepository(
         withContext(Dispatchers.IO) { File(documento.ruta).delete() }
     }
 
-    /**
-     * Dibuja cada página del PDF en un Bitmap con PdfRenderer (API nativa de Android).
-     * ponytail: renderiza todas las páginas de una vez; para PDFs muy largos convendría
-     * renderizar por página al hacer scroll.
-     */
     suspend fun renderizarPdf(ruta: String, anchoPx: Int = 1080): List<Bitmap> =
         withContext(Dispatchers.IO) {
             ParcelFileDescriptor.open(File(ruta), ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->

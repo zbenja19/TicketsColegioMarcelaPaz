@@ -35,7 +35,6 @@ fun AppNavHost(modifier: Modifier = Modifier) {
     val state by authViewModel.state.collectAsStateWithLifecycle()
 
     if (!state.sesionVerificada) {
-        // Mientras se lee la sesión guardada, mostramos el fondo de la portada.
         Box(modifier.fillMaxSize().background(BrandNavy))
     } else {
         AppNavGraph(authViewModel, modifier)
@@ -47,7 +46,6 @@ private fun AppNavGraph(authViewModel: AuthViewModel, modifier: Modifier) {
     val navController = rememberNavController()
     val state by authViewModel.state.collectAsStateWithLifecycle()
 
-    // Se calcula una sola vez: cambiarlo después reconstruiría el grafo.
     val startDestination = remember {
         if (authViewModel.state.value.usuario != null) Routes.MAIN else Routes.WELCOME
     }
@@ -56,7 +54,6 @@ private fun AppNavGraph(authViewModel: AuthViewModel, modifier: Modifier) {
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
-        // Animación al cambiar de pantalla: la nueva entra deslizándose desde la derecha.
         enterTransition = { slideInHorizontally { it / 4 } + fadeIn() },
         exitTransition = { fadeOut() },
         popEnterTransition = { fadeIn() },
@@ -135,7 +132,6 @@ private fun AppNavGraph(authViewModel: AuthViewModel, modifier: Modifier) {
     }
 }
 
-/** Va a la pantalla principal y vacía la pila, para que "atrás" no regrese al login. */
 private fun NavHostController.irAMainLimpio() {
     navigate(Routes.MAIN) {
         popUpTo(graph.id) { inclusive = true }

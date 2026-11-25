@@ -61,8 +61,6 @@ fun DocumentosScreen(
     val context = LocalContext.current
     var porEliminar by remember { mutableStateOf<Documento?>(null) }
 
-    // Selector de archivos del sistema (recurso nativo). No necesita permisos:
-    // el usuario elige el archivo y Android nos da acceso solo a ese.
     val selector = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let(viewModel::subir)
     }
@@ -79,7 +77,6 @@ fun DocumentosScreen(
             onAbrirPdf(documento.id)
             return
         }
-        // Word: se abre con otra app, compartiendo el archivo de forma segura con FileProvider.
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(documento.ruta))
         val intent = Intent(Intent.ACTION_VIEW)
             .setDataAndType(uri, documento.tipo)

@@ -1,13 +1,5 @@
 package com.example.tickets_colegiomarcelapaz.validation
 
-/*
- * Reglas de validación de TODOS los formularios.
- * Son funciones puras: reciben texto y devuelven el mensaje de error o null si está bien.
- * No dependen de Compose ni de Android, por eso se prueban con un test JUnit simple.
- */
-
-// ---------- Usuario (login y registro) ----------
-
 private val EMAIL_REGEX = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
 fun validateName(value: String): String? = when {
@@ -22,7 +14,6 @@ fun validateEmail(value: String): String? = when {
     else -> null
 }
 
-/** [strict] = true para registro (reglas de seguridad); false para login. */
 fun validatePassword(value: String, strict: Boolean): String? = when {
     value.isBlank() -> "Ingresa tu contraseña"
     strict && value.length < 8 -> "Mínimo 8 caracteres"
@@ -36,8 +27,6 @@ fun validateConfirmPassword(password: String, confirm: String): String? = when {
     password != confirm -> "Las contraseñas no coinciden"
     else -> null
 }
-
-// ---------- Nuevo ticket ----------
 
 val SECTORES = listOf("Sala 12", "Biblioteca", "Gimnasio", "Baños", "Patio", "Laboratorio", "Otro")
 val URGENCIAS = listOf("Baja", "Media", "Alta")
@@ -57,21 +46,18 @@ fun validateDescription(value: String): String? = when {
 fun validateSector(value: String): String? =
     if (value !in SECTORES) "Elige un sector" else null
 
-/** El lugar exacto solo es obligatorio cuando el sector es "Otro". */
 fun validatePlace(sector: String, place: String): String? =
     if (sector == "Otro" && place.isBlank()) "Indica el lugar exacto" else null
 
 fun validateUrgency(value: String): String? =
     if (value !in URGENCIAS) "Elige el nivel de urgencia" else null
 
-// ---------- Documentos ----------
-
 val TIPOS_DOCUMENTO = arrayOf(
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 )
-const val MAX_DOCUMENTO_BYTES = 10L * 1024 * 1024 // 10 MB
+const val MAX_DOCUMENTO_BYTES = 10L * 1024 * 1024
 
 fun validateDocument(type: String, size: Long): String? = when {
     type !in TIPOS_DOCUMENTO -> "Solo se permiten archivos PDF o Word"

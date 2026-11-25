@@ -53,7 +53,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun TicketsColegioMarcelaPazTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // false: siempre los colores de marca
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
