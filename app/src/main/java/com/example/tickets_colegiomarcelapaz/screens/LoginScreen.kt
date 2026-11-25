@@ -33,10 +33,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tickets_colegiomarcelapaz.viewmodel.LoginForm
 
-/**
- * Pantalla "tonta": solo dibuja [form] y avisa de cada cambio.
- * El estado y la validación viven en AuthViewModel.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(

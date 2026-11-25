@@ -77,9 +77,6 @@ fun NuevoTicketScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
-    // ---------- Cámara (recurso nativo) ----------
-    // 1) Se crea un archivo vacío en filesDir/fotos y se comparte con la app de cámara vía FileProvider.
-    // 2) La cámara escribe la foto ahí; si el usuario cancela, se borra el archivo.
     var rutaPendiente by rememberSaveable { mutableStateOf<String?>(null) }
     var permisoDenegado by rememberSaveable { mutableStateOf(false) }
     var camaraNoDisponible by remember { mutableStateOf(false) }
@@ -160,7 +157,6 @@ fun NuevoTicketScreen(
                 onSector = viewModel::onSector,
             )
 
-            // El campo "lugar exacto" aparece/desaparece con animación solo si el sector es "Otro".
             AnimatedVisibility(visible = form.sector == "Otro") {
                 CampoTexto(
                     value = form.lugarOtro,
@@ -235,7 +231,6 @@ fun NuevoTicketScreen(
     }
 }
 
-/** Menú desplegable de sectores. Un Box transparente encima del campo abre el menú al tocarlo. */
 @Composable
 private fun SelectorSector(sector: String, error: String?, onSector: (String) -> Unit) {
     var abierto by remember { mutableStateOf(false) }
@@ -270,7 +265,6 @@ private fun SelectorSector(sector: String, error: String?, onSector: (String) ->
     }
 }
 
-/** Crea filesDir/fotos/ticket_<hora>.jpg y devuelve su ruta y un content:// para la cámara. */
 private fun crearArchivoFoto(context: Context): Pair<String, Uri> {
     val carpeta = File(context.filesDir, "fotos").apply { mkdirs() }
     val archivo = File(carpeta, "ticket_${System.currentTimeMillis()}.jpg")

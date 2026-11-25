@@ -24,14 +24,9 @@ data class AuthUiState(
     val cargando: Boolean = false,
     val error: String? = null,
     val usuario: Usuario? = null,
-    /** false mientras se lee la sesión guardada al abrir la app. */
     val sesionVerificada: Boolean = false,
 )
 
-/**
- * Estado del formulario de login. Los errores se calculan a partir de los campos;
- * [intentado] hace que solo se muestren después del primer "Iniciar sesión".
- */
 data class LoginForm(
     val email: String = "",
     val password: String = "",
@@ -82,12 +77,10 @@ class AuthViewModel(
         viewModelScope.launch {
             val id = session.usuarioId.first()
             val usuario = id?.let { repository.obtenerPorId(it) }
-            if (id != null && usuario == null) session.cerrar() // sesión huérfana
+            if (id != null && usuario == null) session.cerrar()
             _state.update { it.copy(usuario = usuario, sesionVerificada = true) }
         }
     }
-
-    // ---------- Cambios de campos (los llama la UI en cada tecla) ----------
 
     fun onLoginEmail(v: String) = _loginForm.update { it.copy(email = v) }
     fun onLoginPassword(v: String) = _loginForm.update { it.copy(password = v) }
@@ -96,8 +89,6 @@ class AuthViewModel(
     fun onRegisterEmail(v: String) = _registerForm.update { it.copy(email = v) }
     fun onRegisterPassword(v: String) = _registerForm.update { it.copy(password = v) }
     fun onRegisterConfirmar(v: String) = _registerForm.update { it.copy(confirmar = v) }
-
-    // ---------- Acciones ----------
 
     fun login(onSuccess: () -> Unit) {
         _loginForm.update { it.copy(intentado = true) }

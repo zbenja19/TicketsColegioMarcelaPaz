@@ -14,14 +14,13 @@ data class Ticket(
     val titulo: String,
     val descripcion: String,
     val sector: String,
-    val urgencia: String,     // Baja, Media o Alta
+    val urgencia: String,
     val estado: String = ESTADOS.first(),
-    val fecha: Long,          // System.currentTimeMillis() al guardar
+    val fecha: Long,
     val fotoRuta: String? = null,
 )
 
 val ESTADOS = listOf("Abierto", "En Proceso", "Cerrado")
 
-/** Abierto -> En Proceso -> Cerrado -> Abierto. */
 fun siguienteEstado(estado: String): String =
     ESTADOS[(ESTADOS.indexOf(estado) + 1) % ESTADOS.size]

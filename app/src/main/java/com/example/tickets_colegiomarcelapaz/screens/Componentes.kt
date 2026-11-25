@@ -48,8 +48,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// ---------- Mensaje de error con ícono (se usa debajo de cada campo) ----------
-
 @Composable
 internal fun MensajeError(texto: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -64,8 +62,6 @@ internal fun MensajeError(texto: String) {
         Text(texto, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     }
 }
-
-// ---------- Campo de texto reutilizable (Material 3) ----------
 
 @Composable
 internal fun CampoTexto(
@@ -119,8 +115,6 @@ internal fun CampoTexto(
     )
 }
 
-// ---------- Banner de error animado (login / registro) ----------
-
 @Composable
 internal fun BannerError(mensaje: String?) {
     AnimatedVisibility(visible = mensaje != null) {
@@ -140,8 +134,6 @@ internal fun BannerError(mensaje: String?) {
         }
     }
 }
-
-// ---------- Botón principal que muestra un loader mientras [cargando] ----------
 
 @Composable
 internal fun BotonPrincipal(texto: String, cargando: Boolean, onClick: () -> Unit) {
@@ -169,9 +161,6 @@ internal fun BotonPrincipal(texto: String, cargando: Boolean, onClick: () -> Uni
     }
 }
 
-// ---------- Foto de evidencia con borde redondeado ----------
-
-/** Carga la foto en segundo plano y la muestra recortada con esquinas redondeadas. */
 @Composable
 internal fun FotoEvidencia(ruta: String, modifier: Modifier = Modifier) {
     val imagen by produceState<ImageBitmap?>(initialValue = null, ruta) {
@@ -190,7 +179,6 @@ internal fun FotoEvidencia(ruta: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** Reduce la foto (inSampleSize) para no cargar 12 MP en memoria y la endereza según EXIF. */
 private fun cargarFoto(ruta: String, maxLado: Int): Bitmap? {
     val medidas = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(ruta, medidas)

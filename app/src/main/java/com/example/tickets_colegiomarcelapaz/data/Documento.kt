@@ -12,9 +12,9 @@ data class Documento(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val usuarioId: Long,
     val nombre: String,
-    val tipo: String,        // MIME: application/pdf, etc.
-    val tamano: Long,        // bytes
-    val fecha: Long,         // System.currentTimeMillis()
-    val ruta: String,        // ruta del archivo copiado en filesDir/documentos
+    val tipo: String,
+    val tamano: Long,
+    val fecha: Long,
+    val ruta: String,
     val categoria: String = "General",
 )

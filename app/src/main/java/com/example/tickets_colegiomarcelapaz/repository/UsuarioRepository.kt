@@ -7,7 +7,6 @@ import java.security.MessageDigest
 
 class UsuarioRepository(private val dao: UsuarioDao) {
 
-    /** Devuelve el usuario creado, o null si el correo ya estaba registrado. */
     suspend fun registrar(nombre: String, email: String, password: String): Usuario? {
         val correo = email.trim().lowercase()
         if (dao.buscarPorEmail(correo) != null) return null
@@ -15,11 +14,10 @@ class UsuarioRepository(private val dao: UsuarioDao) {
         return try {
             nuevo.copy(id = dao.insertar(nuevo))
         } catch (e: SQLiteConstraintException) {
-            null // el índice único también protege contra duplicados
+            null
         }
     }
 
-    /** Devuelve el usuario si las credenciales son correctas, o null. */
     suspend fun login(email: String, password: String): Usuario? {
         val usuario = dao.buscarPorEmail(email.trim().lowercase()) ?: return null
         return if (usuario.passwordHash == hash(password)) usuario else null

@@ -29,7 +29,6 @@ class DocumentoViewModel(
     private val session: SessionManager,
 ) : ViewModel() {
 
-    /** null = cargando. */
     val documentos: StateFlow<List<Documento>?> = session.usuarioId
         .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else repository.documentos(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -37,7 +36,6 @@ class DocumentoViewModel(
     private val _subiendo = MutableStateFlow(false)
     val subiendo: StateFlow<Boolean> = _subiendo.asStateFlow()
 
-    /** Mensaje para el Snackbar; la UI llama a [mensajeMostrado] después de mostrarlo. */
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje.asStateFlow()
 
